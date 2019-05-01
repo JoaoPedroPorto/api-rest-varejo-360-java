@@ -21,7 +21,7 @@ public class ProductServiceImpl implements ProductService {
 			throw new ApplicationException(MessagesEnum.FILE_NOT_FOUND.getMessage());
 		if (keyword == null || keyword.trim().isEmpty())
 			return TableProducts.getInstance().getProducts();
-		return filter(keyword.trim());
+		return filter(keyword.trim().toUpperCase());
 	}
 	
 	private List<ProductResponse> filter(String keyword) {
