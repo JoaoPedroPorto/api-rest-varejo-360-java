@@ -11,6 +11,7 @@ import com.varejo360.dao.TableProducts;
 import com.varejo360.exception.ApplicationException;
 import com.varejo360.response.ProductResponse;
 import com.varejo360.service.ProductService;
+import com.varejo360.util.ApplicationUtil;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -20,27 +21,53 @@ public class ProductServiceImpl implements ProductService {
 		if (TableProducts.getInstance().getProducts().size() == 0)
 			throw new ApplicationException(MessagesEnum.FILE_NOT_FOUND.getMessage());
 		if (keyword == null || keyword.trim().isEmpty())
-			return TableProducts.getInstance().getProducts();
-		return filter(keyword.trim().toUpperCase());
+			return listAllProducts();
+		return filter(ApplicationUtil.removeCaracterSpecial(keyword.trim().toUpperCase()));
+	}
+	
+	private List<ProductResponse> listAllProducts() {
+		List<ProductResponse> products = new ArrayList<>();
+		// RETORNA SOMENTE OS PRODUTOS FIXOS SEM A VARIACAO DE DESCRICOES
+		TableProducts.getInstance().getProducts().forEach(product->{
+			if (!products.contains(product)) {
+				products.add(product);
+			}
+		});
+		return products;
 	}
 	
 	private List<ProductResponse> filter(String keyword) {
-		List<ProductResponse> products = new ArrayList<>();
-		for (ProductResponse product : TableProducts.getInstance().getProducts()) {
-			if (product.getDescription().contains(keyword)) {
+		List<ProductResponse> resultProducts = new ArrayList<>();
+		// REALIZAR A BUSCA DO PRODUTO PELA DESCRICAO
+		TableProducts.getInstance().getProducts().forEach(product->{
+			if (product.getDescription().contains(keyword) || 
+					product.getBarCode().equals(keyword) || 
+					product.getProductName().contains(keyword)) {
 				ProductResponse object = new ProductResponse();
 				object.setBarCode(product.getBarCode());
 				object.setProductName(product.getProductName());
 				object.setDescription(product.getDescription());
 				object.setProbability(getPercentageByProduct(product.getDescription(), keyword));
-				products.add(object);
+				resultProducts.add(object);
 			}
-		}
-		products.sort((d1, d2) -> d1.getProbability().compareTo(d2.getProbability()));
-		Collections.reverse(products);
+		});
+		// ORDENACAO DE PROBABILIDADE
+		resultProducts.sort((d1, d2) -> d1.getProbability().compareTo(d2.getProbability()));
+		Collections.reverse(resultProducts);
+		// RETORNO SOMENTE UM PRODUTO EM CIMA DAS VARIADAS DESCRICOES
+		List<ProductResponse> products = new ArrayList<>();
+		resultProducts.forEach(product->{
+			if (!products.contains(product)) {
+				if (product.getBarCode().equals(keyword)) {
+					product.setProbability(100.0);
+				}
+				products.add(product);
+			}
+		});
 		return products;
 	}
 	
+	// REALIZA O CALCULO DA PORCENTAGEM EM CIMA DA DESCRICAO DO PRODUTO
 	private Double getPercentageByProduct(String description, String keyword) {
 		String [] listKeywords = keyword.split(" ");
 		String [] listDescriptions = description.split(" ");
