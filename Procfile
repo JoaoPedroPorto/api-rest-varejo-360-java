@@ -1,2 +1,1 @@
-web: java $JAVA_OPTS -jar target/varejo360-0.0.1-SNAPSHOT.jar -Dserver.port=$PORT $JAR_OPTS
-
+web: java -Dserver.port=$PORT -Dspring.profiles.active=prod -jar target/varejo360-0.0.1-SNAPSHOT.jar
