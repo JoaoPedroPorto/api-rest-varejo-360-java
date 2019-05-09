@@ -16,7 +16,8 @@ public class WebConfig  extends WebMvcConfigurerAdapter {
 		.addMapping("/**")
 		.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "TRACE", "CONNECT")
 		.allowedHeaders("X-Requested-With", "Origin", "Content-Type", "Accept", "Authorization", "Authentication")
-		.allowedOrigins("*");
+		.allowedOrigins("*")
+		.allowCredentials(true);
 	}
 
 }
