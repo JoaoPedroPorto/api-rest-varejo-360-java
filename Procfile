@@ -1,1 +1,2 @@
-web: java -Dserver.port=$PORT -Dspring.profiles.active=prod -jar target/varejo360-0.0.1-SNAPSHOT.jar
+web: java $JAVA_OPTS -jar target/dependency/webapp-runner.jar --port $PORT target/*.war
+
